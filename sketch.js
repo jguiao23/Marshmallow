@@ -1,12 +1,20 @@
 
 
 // ALL GLOBAL VARIABLES
+//background & sound
 let bg;
+let isPlaying = false;
+let gameOverSound;
+let MenuSound;
+let microSound;
+let startSound;
+
+
 let games = ["minigame1","minigame2","minigame3","minigame4","minigame6"]
 let marsh1,marsh2,marsh3,marsh4,marsh5,marsh6,marsh7,marsh8,marsh9,marsh10;
 let marshScore;
 let index=0;
-let gameState;
+let gameState="startScreen";
 let cookMarsh;//cook minigame3
 let minibar;
 //minigame 2
@@ -14,6 +22,8 @@ let countdown = 5;
 let gameOver = false;
 let win = false;
 let mashing = 0;
+
+
 
 //minigame 6
 let xChocolate = 90;
@@ -26,21 +36,23 @@ let transitionDuration = 1000;  // in milliseconds (1 second)
 
 function preload(){
   bg  = loadImage ("assets/nightbg.png");
-  marsh1 = loadImage("assets/Marsh1.png")
-  marsh2 = loadImage("assets/Marsh2.png")
-  marsh3 = loadImage("assets/Marsh3.png")
-  marsh4 = loadImage("assets/Marsh4.png")
-  marsh5 = loadImage("assets/Marsh5.png")
-  marsh6 = loadImage("assets/Marsh6.png")
-  marsh7 = loadImage("assets/Marsh7.png")
-  marsh8 = loadImage("assets/Marsh8.png")
-  marsh9 = loadImage("assets/Marsh9.png")
-  marsh10 = loadImage("assets/Marsh10.png")
+  marsh1 = loadImage("assets/Marsh1.png");
+  marsh2 = loadImage("assets/Marsh2.png");
+  marsh3 = loadImage("assets/Marsh3.png");
+  marsh4 = loadImage("assets/Marsh4.png");
+  marsh5 = loadImage("assets/Marsh5.png");
+  marsh6 = loadImage("assets/Marsh6.png");
+  marsh7 = loadImage("assets/Marsh7.png");
+  marsh8 = loadImage("assets/Marsh8.png");
+  marsh9 = loadImage("assets/Marsh9.png");
+  marsh10 = loadImage("assets/Marsh10.png");
   marshScore = [marsh1,marsh2,marsh3,marsh4,marsh5,marsh6,marsh7,marsh8,marsh9,marsh10]
 
-
-
-
+  //sound assets
+  MenuSound = loadSound("marsh_sound/menu.mp3")
+  microSound = loadSound("marsh_sound/micro.mp3")
+  startSound = loadSound("marsh_sound/start.mp3")
+  gameOverSound = loadSound("marsh_sound/game_over.mp3")
 
 }
 
@@ -52,7 +64,8 @@ function setup() {
   textSize(32);
   frameRate(30);
 
-  startNextGame();  // pick the first game
+  
+  // startNextGame();  // pick the first game
 
 
 }
@@ -62,7 +75,16 @@ function draw() {
   imageMode(CENTER,CENTER);
   image(bg,width/2,height/2);
 
+  if (gameState ==="startScreen"){
+    startScreen();
+
+    if (mouseIsPressed){
+     startTransition();
+    }
+  }
+
   if(gameState==="minigame1"){
+    
     minibar.bounce();
     minibar.show();
     minibar.update();
@@ -74,27 +96,69 @@ function draw() {
     } else if(minibar.miss > 0){
       gameState = "endscreen";
     }
+    if (!microSound.isPlaying()){
+      microSound.play();
+      startSound.stop();
+      MenuSound.stop();
+    }
   }
   else if (gameState==="minigame2"){
+    if (!microSound.isPlaying()){
+      microSound.play();
+      startSound.stop();
+      MenuSound.stop();
+    }
+    image(bg,width/2,height/2);
     minigame2();
   }
   else if(gameState === "minigame3"){
+    if (!microSound.isPlaying()){
+      microSound.play();
+      startSound.stop();
+      MenuSound.stop();
+    }
     minigame3();
   }
   else if(gameState==="minigame4"){
+    if (!microSound.isPlaying()){
+      microSound.play();
+      startSound.stop();
+      MenuSound.stop();
+    }
     minigame4();
   }
   else if(gameState==="minigame5"){
+    if (!microSound.isPlaying()){
+      microSound.play();
+      startSound.stop();
+      MenuSound.stop();
+    }
     minigame5();
   }
   else if(gameState==="minigame6"){
+    if (!microSound.isPlaying()){
+      microSound.play();
+      startSound.stop();
+      MenuSound.stop();
+    }
     minigame6();
   }
 else if (gameState==="endscreen"){
+  if(!gameOverSound.isPlaying()){
+    gameOverSound.play();
+    microSound.stop();
+    MenuSound.stop();
+    startSound.stop();
+    
+  }
   endScreens();
 }
 // —— TRANSITION STATE ——
 else if (gameState === "transition") {
+  if(!startSound.isPlaying()){
+    startSound.play();
+    microSound.stop();
+  }
   background(50, 150, 255); // transition screen color
   fill(255);
   textAlign(CENTER,CENTER);
@@ -129,6 +193,22 @@ function mouseDragged(){
 
 // ALL CUSTOM FUNCTIONS
 
+function startScreen(){
+
+  if (keyIsPressed){
+    if (!MenuSound.isPlaying()){
+    MenuSound.play();
+   }
+  }
+
+  image(bg,width/2,height/2);
+  textAlign(CENTER);
+  textSize(32);
+  text("CLICK ON LEFT MOUSE TO START",width/2,height/2);
+
+  
+}
+
 function startNextGame(){
   gameState = random(games);
 
@@ -159,6 +239,7 @@ function startNextGame(){
   }
 }
 function endScreens(){
+  
   textAlign(CENTER, CENTER);
   textSize(32);
   imageMode(CENTER);
@@ -173,6 +254,7 @@ function endScreens(){
 }
 
 function minigame2(){
+  
   if (!gameOver) {
     background(220);  // ← only clear while playing
 
@@ -187,6 +269,7 @@ function minigame2(){
       gameOver = true;
       win      = true;
     }
+    image(bg,width/2,height/2);
     textAlign(CENTER);
     fill(0);
     textSize(32);
@@ -254,4 +337,5 @@ function minigame6(){
 function startTransition() {
   gameState = "transition";
   transitionStartTime = millis(); // get the current time
+
 }
