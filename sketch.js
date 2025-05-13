@@ -1,10 +1,12 @@
 
 
+
 // ALL GLOBAL VARIABLES
 //background & sound
 let bg;
 let isPlaying = false;
 let gameOverSound;
+let gameOverSoundTrigger=false;
 let MenuSound;
 let microSound;
 let startSound;
@@ -12,8 +14,10 @@ let startSound;
 
 let games = ["minigame1","minigame2","minigame3","minigame4","minigame5","minigame6"]
 let marsh1,marsh2,marsh3,marsh4,marsh5,marsh6,marsh7,marsh8,marsh9,marsh10;
+let smore1,smore2,smore3,smore4,smore5,smore6,smore7,smore8,smore9,smore10;
 let marshScore;
 let index=0;
+let smoresIndex=0;
 let gameState="startScreen";
 let cookMarsh;//cook minigame3
 let minibar;
@@ -54,6 +58,18 @@ function preload(){
   marsh10 = loadImage("assets/Marsh10.png");
   marshScore = [marsh1,marsh2,marsh3,marsh4,marsh5,marsh6,marsh7,marsh8,marsh9,marsh10]
 
+  smore1= loadImage("assets/smore1.png")
+  smore2=loadImage("assets/smores2.png")
+  smore3=loadImage("assets/smores3.png")
+  smore4=loadImage("assets/smores4.png")
+  smore5=loadImage("assets/smores5.png")
+  smore6=loadImage("assets/smores6.png")
+  smore7=loadImage("assets/smores7.png")
+  smore8=loadImage("assets/smores8.png")
+  smore9=loadImage("assets/smores8.png")
+  smore10=loadImage("assets/smores10.png")
+  smoreScore = [smore1,smore2,smore3,smore4,smore5,smore6,smore7,smore8,smore9,smore10]
+
   //sound assets
   MenuSound = loadSound("marsh_sound/menu.mp3")
   microSound = loadSound("marsh_sound/micro.mp3")
@@ -84,24 +100,40 @@ function draw() {
   if (gameState ==="startScreen"){
     startScreen();
 
-    if (mouseIsPressed){
+    if (keyIsPressed){
      startTransition();
     }
   }
 
   if(gameState==="minigame1"){
+
     
     minibar.bounce();
     minibar.show();
     minibar.update();
     minibar.drawText();
+    text(countdown, width/2, 50);
+    
+    if (!gameOver) {
+      if (frameCount % 30 === 0 && countdown > 0) {
+        countdown--;
+      }
+    }
+    
+    if (countdown===0){
+      gameState="endscreen"
+    }
     if (minibar.hit > 0){
+
       startTransition();
+
       index = (index +1) % marshScore.length;
+      smoresIndex = (smoresIndex +1) % smoreScore.length;
       return; // skip rest of draw this frame
     } else if(minibar.miss > 0){
       gameState = "endscreen";
     }
+    
     if (!microSound.isPlaying()){
       microSound.play();
       startSound.stop();
@@ -150,19 +182,25 @@ function draw() {
     minigame6();
   }
 else if (gameState==="endscreen"){
+  if(gameOverSoundTrigger ===false){
+    
   if(!gameOverSound.isPlaying()&&gameOverSound.isLoaded()){
     gameOverSound.play();
     microSound.stop();
     MenuSound.stop();
     startSound.stop(); 
   }
+  gameOverSoundTrigger=true;
+}
   endScreens();
+
+  
 }
 // —— TRANSITION STATE ——
 else if (gameState === "transition") {
   if(!startSound.isPlaying()){
     startSound.play();
-    microSound.stop();
+    microSound.pause();
     MenuSound.stop();
 
   }
@@ -178,6 +216,9 @@ else if (gameState === "transition") {
   }
 }
 
+else if (gameState==="smores"){
+  Smores();
+}
 
 }
 
@@ -205,15 +246,18 @@ function mouseDragged(){
 // ALL CUSTOM FUNCTIONS
 
 function startScreen(){
-
+  if(mouseIsPressed){
     if (!MenuSound.isPlaying()){
     MenuSound.play();
    }
+  }
 
   image(bg,width/2,height/2);
   textAlign(CENTER);
   textSize(32);
   text("CLICK ON LEFT MOUSE TO START",width/2,height/2);
+
+  text("Directions: USE LEFT MOUSE TO CLICK AND HOLD",width/2,height/2.5)
 
   
 }
@@ -254,10 +298,30 @@ function endScreens(){
   imageMode(CENTER);
   text("Your fire went out! \n this is your score:",width/2,height/6);
   image(marshScore[index],width/2,height/2,400,400);
+  text("Put the marshallow in the grahamcracker \n to make the smores",width/2,height/4);
 
-  if (keyIsPressed){
+  
+
+
+  if (keyIsDown(32)){
     startNextGame();
     index = 0;
+    smoreIndex = 0;
+  }
+
+  if(keyIsDown(DOWN_ARROW)){
+    gameState = "smores";
+  }
+}
+
+function Smores(){
+  text("HERE IS YOUR SMORE \n ENJOY", width/2,height/6)
+  image(smoreScore[smoresIndex],width/2,height/2,400,400)
+
+  if(mouseIsPressed){
+    startNextGame()
+    index = 0;
+    smoreIndex = 0;
   }
 
 }
@@ -289,6 +353,7 @@ function minigame2(){
     if (win) {
       startTransition();
       index = (index +1) % marshScore.length;
+      smoresIndex = (smoresIndex +1) % smoreScore.length;
       return;
     } else {
       gameState = "endscreen"}
@@ -316,12 +381,14 @@ function minigame3(){
     fill(0);
     textSize(32);
     text(countdown, width/2, 50);
+    text(cookMarsh,width/2,height/2.5)
     text("Hold the left mouse to cook\nthe marshmallow", width/2, height/2);
   } else {
     // gameOver === true: draw final screen
     if (win) {
       startTransition();
       index = (index +1) % marshScore.length;
+      smoresIndex = (smoresIndex +1) % smoreScore.length;
       return;
     } else {
       gameState = "endscreen"}
@@ -336,7 +403,7 @@ function minigame4(){
     textSize(32);
     text(countdown, width/2, 50);
     text("MASH THE LEFT MOUSE \n TO PUT OUT THE FIRE",width/2,height/2) 
-
+    text(mashing,width/2,70)
   if (!gameOver) {
     if (frameCount % 30 === 0 && countdown > 0) {
       countdown--;
@@ -355,6 +422,7 @@ function minigame4(){
     if (win) {
       startTransition();
       index = (index +1) % marshScore.length;
+      smoresIndex = (smoresIndex +1) % smoreScore.length;
       return;
     } else {
       gameState = "endscreen"}
@@ -365,6 +433,7 @@ function minigame4(){
 function minigame5(){
   image(bg,width/2,height/2);
   text(countdown, width/2, 50);
+  text("Drop the ball in the box",width/2,70)
 
   
   rectMode(CENTER);
@@ -398,6 +467,8 @@ function minigame5(){
           xpos <= platformX + platformW / 2 
          ) {
           startTransition();
+          index = (index +1) % marshScore.length;
+          smoresIndex = (smoresIndex +1) % smoreScore.length;
         } else{
           gameState= "endscreen"
         }
@@ -407,29 +478,6 @@ function minigame5(){
       }
 
     }
-
-
-
-
-      // if (xChocolate>300 && countdown > 0) {
-      //   gameOver = true;
-      //   win      = true;
-      // }
-      // if (countdown === 0) {
-      //   gameOver = true;
-      //   win      = false;
-      // }
-      
-    // } else {
-    //   // gameOver === true: draw final screen
-    //   if (win) {
-    //     startTransition();
-    //     index = (index +1) % marshScore.length;
-    //     return;
-    //   } else {
-    //     gameState = "endscreen"}
-    //     return;
-    // }
 }
 
 function minigame6(){
@@ -463,6 +511,8 @@ function minigame6(){
     if (win) {
       startTransition();
       index = (index +1) % marshScore.length;
+      smoresIndex = (smoresIndex +1) % smoreScore.length;
+
       return;
     } else {
       gameState = "endscreen"}
