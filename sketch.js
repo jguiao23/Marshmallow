@@ -10,7 +10,7 @@ let microSound;
 let startSound;
 
 
-let games = ["minigame1","minigame2","minigame3","minigame4","minigame6"]
+let games = ["minigame1","minigame2","minigame3","minigame4","minigame5","minigame6"]
 let marsh1,marsh2,marsh3,marsh4,marsh5,marsh6,marsh7,marsh8,marsh9,marsh10;
 let marshScore;
 let index=0;
@@ -23,7 +23,13 @@ let gameOver = false;
 let win = false;
 let mashing = 0;
 
-
+//minigame 5 
+let xpos = 200;
+let ypos = 30;
+let xspeed = 10;
+let yspeed = 0;
+let falling = false;
+let resultShown = false;
 
 //minigame 6
 let xChocolate = 90;
@@ -144,12 +150,11 @@ function draw() {
     minigame6();
   }
 else if (gameState==="endscreen"){
-  if(!gameOverSound.isPlaying()){
+  if(!gameOverSound.isPlaying()&&gameOverSound.isLoaded()){
     gameOverSound.play();
     microSound.stop();
     MenuSound.stop();
-    startSound.stop();
-    
+    startSound.stop(); 
   }
   endScreens();
 }
@@ -158,6 +163,8 @@ else if (gameState === "transition") {
   if(!startSound.isPlaying()){
     startSound.play();
     microSound.stop();
+    MenuSound.stop();
+
   }
   background(50, 150, 255); // transition screen color
   fill(255);
@@ -182,7 +189,11 @@ function mousePressed(){
     mashing++;
   }
   if(gameState==="minigame5"){
-    
+    if (!falling) {
+      falling = true;
+      yspeed = 5;
+      xspeed = 0;
+    }
   }
 }
 function mouseDragged(){
@@ -195,11 +206,9 @@ function mouseDragged(){
 
 function startScreen(){
 
-  if (keyIsPressed){
     if (!MenuSound.isPlaying()){
     MenuSound.play();
    }
-  }
 
   image(bg,width/2,height/2);
   textAlign(CENTER);
@@ -225,7 +234,7 @@ function startNextGame(){
   //reset minigame5 score
   xpos = 200;
   ypos = 30;
-  xspeed = 2;
+  xspeed = 10;
   yspeed = 0;
   falling = false;
 
@@ -282,51 +291,182 @@ function minigame2(){
       index = (index +1) % marshScore.length;
       return;
     } else {
-      endScreens();
-    }
+      gameState = "endscreen"}
+      return;
   }
 }
 function minigame3(){
-  if (mouseIsPressed){
-    background(0);
-    cookMarsh++;
+  if (!gameOver) {
+    if (mouseIsPressed){
+      cookMarsh++;
+    }
+    if (frameCount % 30 === 0 && countdown > 0) {
+      countdown--;
+    }
+    if (cookMarsh===50 && countdown > 0) {
+      gameOver = true;
+      win      = true;
+    }
+    if (countdown === 0) {
+      gameOver = true;
+      win      = false;
+    }
+    image(bg,width/2,height/2);
     textAlign(CENTER);
-
+    fill(0);
+    textSize(32);
+    text(countdown, width/2, 50);
     text("Hold the left mouse to cook\nthe marshmallow", width/2, height/2);
-  }else{
-    textAlign(CENTER);
-    text("Hold the left mouse to cook\nthe marshmallow", width/2, height/2);
-  }
-
-  if(cookMarsh ===50){
-    startTransition();
-    index = (index +1) % marshScore.length;
-    return;
+  } else {
+    // gameOver === true: draw final screen
+    if (win) {
+      startTransition();
+      index = (index +1) % marshScore.length;
+      return;
+    } else {
+      gameState = "endscreen"}
+      return;
   }
 
 }
 function minigame4(){
-  textAlign(CENTER);
-  textSize(32);
-  text("MASH THE LEFT MOUSE \n TO PUT OUT THE FIRE",width/2,height/2) 
-  if(mashing>10){
-    startTransition();
-    index = (index +1) % marshScore.length;
+  image(bg,width/2,height/2);
+    textAlign(CENTER);
+    fill(0);
+    textSize(32);
+    text(countdown, width/2, 50);
+    text("MASH THE LEFT MOUSE \n TO PUT OUT THE FIRE",width/2,height/2) 
+
+  if (!gameOver) {
+    if (frameCount % 30 === 0 && countdown > 0) {
+      countdown--;
+    }
+    if (mashing>10 && countdown > 0) {
+      gameOver = true;
+      win      = true;
+    }
+    if (countdown === 0) {
+      gameOver = true;
+      win      = false;
+    }
+    
+  } else {
+    // gameOver === true: draw final screen
+    if (win) {
+      startTransition();
+      index = (index +1) % marshScore.length;
+      return;
+    } else {
+      gameState = "endscreen"}
+      return;
   }
 }
+
+function minigame5(){
+  image(bg,width/2,height/2);
+  text(countdown, width/2, 50);
+
+  
+  rectMode(CENTER);
+    let platformX = width / 2;
+    let platformY = 350;
+    let platformW = 150;
+    let platformH = 50;
+    rect(platformX, platformY, platformW, platformH);
+    ellipse(xpos, ypos, 50);
+    
+    if (!gameOver) {
+      if (frameCount % 30 === 0 && countdown > 0) {
+        countdown--;
+      }
+
+      if (!falling) {
+        xpos += xspeed;
+        if (xpos > width || xpos < 0) {
+          xspeed *= -1;
+        }
+      }
+      if (falling) {
+        ypos += yspeed;
+        yspeed += 0.5; // gravity
+      }
+
+      if (falling && ypos + 25 >= platformY - platformH / 2) {
+        falling = false;
+        if (
+          xpos >= platformX - platformW / 2 &&
+          xpos <= platformX + platformW / 2 
+         ) {
+          startTransition();
+        } else{
+          gameState= "endscreen"
+        }
+      }
+      if(countdown===0){
+        gameState = "endscreen"
+      }
+
+    }
+
+
+
+
+      // if (xChocolate>300 && countdown > 0) {
+      //   gameOver = true;
+      //   win      = true;
+      // }
+      // if (countdown === 0) {
+      //   gameOver = true;
+      //   win      = false;
+      // }
+      
+    // } else {
+    //   // gameOver === true: draw final screen
+    //   if (win) {
+    //     startTransition();
+    //     index = (index +1) % marshScore.length;
+    //     return;
+    //   } else {
+    //     gameState = "endscreen"}
+    //     return;
+    // }
+}
+
 function minigame6(){
+  image(bg,width/2,height/2);
   push();
   textAlign(CENTER);
   textSize(32);
   fill(0);
+  text(countdown, width/2, 50);
   text("Drag and click mouse to the left, to open the choclate",width/2,height/3)
   pop();
 
   ellipseMode(CENTER)
   ellipse(xChocolate,width/2,90)
 
-  if(xChocolate>300){
-    startTransition();
+  if (!gameOver) {
+    if (frameCount % 30 === 0 && countdown > 0) {
+      countdown--;
+    }
+    if (xChocolate>300 && countdown > 0) {
+      gameOver = true;
+      win      = true;
+    }
+    if (countdown === 0) {
+      gameOver = true;
+      win      = false;
+    }
+    
+  } else {
+    // gameOver === true: draw final screen
+    if (win) {
+      startTransition();
+      index = (index +1) % marshScore.length;
+      return;
+    } else {
+      gameState = "endscreen"}
+      return;
   }
 }
 
