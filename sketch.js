@@ -10,9 +10,13 @@ let gameOverSoundTrigger=false;
 let MenuSound;
 let microSound;
 let startSound;
+let screenState=0;
+let restart =false;
+let pixelFont;
 
 
-let games = ["minigame1","minigame2","minigame3","minigame4","minigame5","minigame6"]
+// let games = ["minigame1","minigame2","minigame3","minigame4","minigame5","minigame6"]
+let games = ["minigame6"]
 let marsh1,marsh2,marsh3,marsh4,marsh5,marsh6,marsh7,marsh8,marsh9,marsh10;
 let smore1,smore2,smore3,smore4,smore5,smore6,smore7,smore8,smore9,smore10;
 let marshScore;
@@ -21,13 +25,36 @@ let smoresIndex=0;
 let gameState="startScreen";
 let cookMarsh;//cook minigame3
 let minibar;
+
+//minigame1
+let fly;
+let swatter;
+let target;
+let hit=0;
+let miss=0
+let flyX;
+let flyY;
+let flySpeed;
+let leftEdge;
+let rightEdge;
+
+
+
+
+
 //minigame 2
-let countdown = 5;
+let countdown = 30;
+let freezeCount = 5;
 let gameOver = false;
 let win = false;
 let mashing = 0;
 
+//minigame3
+let campfire;
+//minigame 4
+let fan;
 //minigame 5 
+let mouth;
 let xpos = 200;
 let ypos = 30;
 let xspeed = 10;
@@ -36,15 +63,19 @@ let falling = false;
 let resultShown = false;
 
 //minigame 6
-let xChocolate = 90;
+let xChocolate = 100;
+let chocolatebar;
+let chocolate;
 
 
 
 //transition 
 let transitionStartTime = 0;
-let transitionDuration = 1000;  // in milliseconds (1 second)
+let transitionDuration = 1500;  // in milliseconds (1 second)
 
 function preload(){
+
+  pixelFont = loadFont("assets/pixel.otf")
   bg  = loadImage ("assets/nightbg.png");
   marsh1 = loadImage("assets/Marsh1.png");
   marsh2 = loadImage("assets/Marsh2.png");
@@ -76,6 +107,26 @@ function preload(){
   startSound = loadSound("marsh_sound/start.mp3")
   gameOverSound = loadSound("marsh_sound/game_over.mp3")
 
+
+  //minigame assets
+  
+  //minigame1
+  fly = loadImage("assets/fly.png")
+  swatter = loadImage("assets/swatter.gif")
+  target = loadImage("assets/target.png")
+
+  //minigame2
+  
+  //minigame3
+  campfire = loadImage("assets/campfire.gif")
+  //minigame4
+  fan = loadImage("assets/fan.gif")
+  //minigame5
+  mouth=loadImage("assets/mouth.png")
+  //minigame6
+  chocolatebar = loadImage("assets/chocolatebar.png")
+  chocolate = loadImage("assets/chocolate_square.png")
+  
 }
 
 function setup() {
@@ -94,51 +145,49 @@ function setup() {
 
 function draw() {
   background(255);
+  fill(255);
   imageMode(CENTER,CENTER);
   image(bg,width/2,height/2);
-
-  if (gameState ==="startScreen"){
-    startScreen();
-
-    if (keyIsPressed){
-     startTransition();
-    }
-  }
-
-  if(gameState==="minigame1"){
-
-    
-    minibar.bounce();
-    minibar.show();
-    minibar.update();
-    minibar.drawText();
-    text(countdown, width/2, 50);
-    
-    if (!gameOver) {
-      if (frameCount % 30 === 0 && countdown > 0) {
-        countdown--;
-      }
-    }
-    
-    if (countdown===0){
-      gameState="endscreen"
-    }
-    if (minibar.hit > 0){
-
-      startTransition();
-
-      index = (index +1) % marshScore.length;
-      smoresIndex = (smoresIndex +1) % smoreScore.length;
-      return; // skip rest of draw this frame
-    } else if(minibar.miss > 0){
+  textFont(pixelFont);
+  textSize(50);
+  
+  if(index>=marshScore.length-1){
       gameState = "endscreen";
     }
-    
+  if (keyIsDown(UP_ARROW)){
+      gameState="endscreen";
+    }
+
+  if (gameState ==="startScreen"){
+    if(screenState===0){
+    preScreen();
+    }
+    if(screenState===1){
+      startScreen();
+    }
+    if(screenState===2){
+     startTransition();
+  }
+}
+
+  if(gameState==="minigame1"){
     if (!microSound.isPlaying()){
       microSound.play();
       startSound.stop();
       MenuSound.stop();
     }
+    text(countdown, width/2, 50);
+    if (!gameOver) {
+      if (frameCount % 30 === 0 && countdown > 0) {
+        countdown--;
+      }
+    }
+    if (countdown===0){
+      gameState="endscreen"
+    }
+    minigame1();
+    
+
   }
   else if (gameState==="minigame2"){
     if (!microSound.isPlaying()){
@@ -202,13 +251,15 @@ else if (gameState === "transition") {
     startSound.play();
     microSound.pause();
     MenuSound.stop();
-
   }
+  // if(marshScore[index]>=marshScore.length-1){
+  //   gameState = "checkpoint";
+  // }
   background(50, 150, 255); // transition screen color
   fill(255);
   textAlign(CENTER,CENTER);
   imageMode(CENTER);
-  text("Great!\nNext game starting...", width / 6, height / 2);
+  text("Amazing\nNext game starting...", width / 2, height / 4);
   image(marshScore[index],width/2,height/2,400,400);
 
   if (millis() - transitionStartTime > transitionDuration) {
@@ -220,12 +271,27 @@ else if (gameState==="smores"){
   Smores();
 }
 
+
+
 }
 
 function mousePressed(){
-  if(gameState==="minigame1"){
-    minibar.mousePressed();
+  if (gameState==="startScreen"){
+    screenState++;
   }
+
+  if(gameState==="minigame1"){
+    // minibar.mousePressed();
+    leftEdge  = width/2 - 100;
+    rightEdge = width/2 + 100;
+    if (mouseIsPressed &&
+      flyX >= leftEdge &&
+      flyX <= rightEdge) {
+      hit++;
+      } else{
+        miss++;
+        }
+}
   if(gameState === "minigame4"){
     mashing++;
   }
@@ -239,11 +305,15 @@ function mousePressed(){
 }
 function mouseDragged(){
   if (gameState==="minigame6"){
-    xChocolate = xChocolate + 8
+    xChocolate = xChocolate + 15
   }
 }
 
 // ALL CUSTOM FUNCTIONS
+
+function preScreen(){
+  text("PRESS ON THE FIRE\n TO OPEN MENU",width/2,height/2)
+}
 
 function startScreen(){
   if(mouseIsPressed){
@@ -255,20 +325,29 @@ function startScreen(){
   image(bg,width/2,height/2);
   textAlign(CENTER);
   textSize(32);
-  text("CLICK ON LEFT MOUSE TO START",width/2,height/2);
+  text("PRESS ON THE FIRE \nAGAIN TO START",width/2,height/2);
 
-  text("Directions: USE LEFT MOUSE TO CLICK AND HOLD",width/2,height/2.5)
+  text("Directions:\n USE LEFT MOUSE TO CLICK AND HOLD",width/2,height/2.5)
 
   
 }
 
 function startNextGame(){
   gameState = random(games);
+  countdown--;
 
+  //reset minigame1 score
+  flyX=width/2
+  flyY=height/2
+  flySpeed=50
+
+  hit=0
+  miss=0;
   //reset minigame3 scores
   cookMarsh = 0;
   //reset minigame2 score
-  countdown =5;
+  freezeCount = 5;
+ 
   gameOver = false;
   win = false;
   
@@ -283,28 +362,28 @@ function startNextGame(){
   falling = false;
 
   //reset minigame 6 score
-  xChocolate = 90;
+  xChocolate = 250;
 
 
-  if (gameState ==="minigame1"){
-    minibar = new Bar();
-
-  }
+  
 }
 function endScreens(){
   
   textAlign(CENTER, CENTER);
   textSize(32);
   imageMode(CENTER);
-  text("Your fire went out! \n this is your score:",width/2,height/6);
-  image(marshScore[index],width/2,height/2,400,400);
-  text("Put the marshallow in the grahamcracker \n to make the smores",width/2,height/4);
-
+  text("Your fire went out! \n this is your marshmallow:",width/2,height/4);
+  image(marshScore[index],width/2,500,600,600);
+  text("Put the marshallow in the \ngrahamcracker to make the smores",width/2,750);
   
+  //if(index>=marshScore.length-1){
+  //text("YOU BURNT THE SMORES WTF")
+  //}else 
+  // text("Your fire went out! \n this is your score:",width/2,height/6);
 
 
   if (keyIsDown(32)){
-    startNextGame();
+    startTransition();
     index = 0;
     smoreIndex = 0;
   }
@@ -315,30 +394,54 @@ function endScreens(){
 }
 
 function Smores(){
-  text("HERE IS YOUR SMORE \n ENJOY", width/2,height/6)
-  image(smoreScore[smoresIndex],width/2,height/2,400,400)
+  text("HERE IS YOUR SMORE \n ENJOY", width/2,height/3)
+  image(smoreScore[smoresIndex],width/2,height/2,600,600)
+
+  text("Press on the fire to retry!",width/2,700)
 
   if(mouseIsPressed){
-    startNextGame()
+    startTransition()
     index = 0;
     smoreIndex = 0;
   }
 
 }
 
+function minigame1(){
+imageMode(CENTER);
+textAlign(CENTER);
+text("SWAT THE FLY!!!",width/2,height/4)
+image(fly,flyX,flyY,300,300)
+image(target,width/2,height/2.1,300,300)
+
+//bounce code
+flyX += flySpeed;
+  if(flyX > width -100 || flyX < 0 + 100){
+    flySpeed*= -1;
+  }
+
+  if(hit>0){
+    startTransition();
+    index = (index +1) % marshScore.length;
+    smoresIndex = (smoresIndex +1) % smoreScore.length;
+  }else if(miss>0){
+    gameState="endscreen"
+    }
+  }
+
 function minigame2(){
   
   if (!gameOver) {
     background(220);  // ← only clear while playing
 
-    if (frameCount % 30 === 0 && countdown > 0) {
-      countdown--;
+    if (frameCount % 30 === 0 && freezeCount > 0) {
+      freezeCount--;
     }
-    if (mouseIsPressed && countdown > 0) {
+    if (mouseIsPressed && freezeCount > 0) {
       gameOver = true;
       win      = false;
     }
-    if (countdown === 0) {
+    if (freezeCount === 0) {
       gameOver = true;
       win      = true;
     }
@@ -347,7 +450,8 @@ function minigame2(){
     fill(0);
     textSize(32);
     text(countdown, width/2, 50);
-    text("DO NOT MOVE",width/2,height/2)
+    text(freezeCount, width/2, 50);
+    text("DO NOT MOVE",width/2,height/2);
   } else {
     // gameOver === true: draw final screen
     if (win) {
@@ -368,7 +472,7 @@ function minigame3(){
     if (frameCount % 30 === 0 && countdown > 0) {
       countdown--;
     }
-    if (cookMarsh===50 && countdown > 0) {
+    if (cookMarsh===100 && countdown > 0) {
       gameOver = true;
       win      = true;
     }
@@ -376,13 +480,16 @@ function minigame3(){
       gameOver = true;
       win      = false;
     }
+    imageMode(CENTER);
     image(bg,width/2,height/2);
     textAlign(CENTER);
     fill(0);
     textSize(32);
     text(countdown, width/2, 50);
-    text(cookMarsh,width/2,height/2.5)
-    text("Hold the left mouse to cook\nthe marshmallow", width/2, height/2);
+    text(cookMarsh,width/2,200);
+
+    text("Press the marshmallow in the fire \nto cook the marshmallow", width/2, 600);
+    image(campfire,width/2,height/2.5,400,400)
   } else {
     // gameOver === true: draw final screen
     if (win) {
@@ -402,8 +509,9 @@ function minigame4(){
     fill(0);
     textSize(32);
     text(countdown, width/2, 50);
-    text("MASH THE LEFT MOUSE \n TO PUT OUT THE FIRE",width/2,height/2) 
+    text("WHACK THE MARSHMALLOW \n TO PUT OUT THE FIRE",width/2,height/2) 
     text(mashing,width/2,70)
+    image(campfire,width/2,height/2,100,100)
   if (!gameOver) {
     if (frameCount % 30 === 0 && countdown > 0) {
       countdown--;
@@ -431,18 +539,20 @@ function minigame4(){
 }
 
 function minigame5(){
+  imageMode(CENTER);
   image(bg,width/2,height/2);
   text(countdown, width/2, 50);
   text("Drop the ball in the box",width/2,70)
 
-  
   rectMode(CENTER);
     let platformX = width / 2;
-    let platformY = 350;
+    let platformY = 800;
     let platformW = 150;
     let platformH = 50;
     rect(platformX, platformY, platformW, platformH);
-    ellipse(xpos, ypos, 50);
+    image(mouth,width/2,490)
+    // ellipse(xpos, ypos, 50);
+    image(marsh1,xpos,ypos,400,400);
     
     if (!gameOver) {
       if (frameCount % 30 === 0 && countdown > 0) {
@@ -481,23 +591,28 @@ function minigame5(){
 }
 
 function minigame6(){
+  imageMode(CENTER);
   image(bg,width/2,height/2);
-  push();
   textAlign(CENTER);
   textSize(32);
-  fill(0);
   text(countdown, width/2, 50);
-  text("Drag and click mouse to the left, to open the choclate",width/2,height/3)
-  pop();
+  text("Drag the marshmallow to the left,\n to open the chocolate bar",width/2,height/3)
 
-  ellipseMode(CENTER)
-  ellipse(xChocolate,width/2,90)
+  imageMode(CENTER);
+
+
+  ellipseMode(CENTER);
+  // ellipse(xChocolate,width/2,90)
+  image(chocolate,xChocolate,height/2)
+  image(chocolatebar,250,height/1.5,500,500)
+
+
 
   if (!gameOver) {
     if (frameCount % 30 === 0 && countdown > 0) {
       countdown--;
     }
-    if (xChocolate>300 && countdown > 0) {
+    if (xChocolate>600 && countdown > 0) {
       gameOver = true;
       win      = true;
     }
@@ -519,6 +634,7 @@ function minigame6(){
       return;
   }
 }
+
 
 
 
