@@ -1,6 +1,4 @@
 
-
-
 // ALL GLOBAL VARIABLES
 //background & sound
 let bg;
@@ -155,9 +153,7 @@ function draw() {
   textFont(pixelFont);
   textSize(50);
   
-  if(index>=marshScore.length-1){
-      gameState = "endscreen";
-    }
+  
   if (keyIsDown(UP_ARROW)){
       gameState="endscreen";
     }
