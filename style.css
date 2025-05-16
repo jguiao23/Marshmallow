@@ -1,6 +1,8 @@
 html, body {
   margin: 0;
   padding: 0;
+  color: white;
+  background-color:rgb(96, 96, 233)
 }
 
 canvas {
@@ -11,7 +13,21 @@ canvas {
  h1{
   text-align: center;
  
- 
- 
- 
  }
+
+p{
+  text-align: center;
+  font: size 18px;
+} 
+img{
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width:50%
+}
+iframe{
+  display: block;
+  margin-left: auto;
+  margin-right:auto ;
+  width:50%
+}
