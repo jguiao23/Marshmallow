@@ -13,10 +13,12 @@ let startSound;
 let screenState=0;
 let restart =false;
 let pixelFont;
+let stick;
+let tutorial;
+let wash;
 
 
-// let games = ["minigame1","minigame2","minigame3","minigame4","minigame5","minigame6"]
-let games = ["minigame6"]
+let games = ["minigame1","minigame2","minigame3","minigame4","minigame5","minigame6"]
 let marsh1,marsh2,marsh3,marsh4,marsh5,marsh6,marsh7,marsh8,marsh9,marsh10;
 let smore1,smore2,smore3,smore4,smore5,smore6,smore7,smore8,smore9,smore10;
 let marshScore;
@@ -74,8 +76,10 @@ let transitionStartTime = 0;
 let transitionDuration = 1500;  // in milliseconds (1 second)
 
 function preload(){
-
+  tutorial = loadImage("assets/tutorial.gif")
+  wash = loadImage("assets/water.png");
   pixelFont = loadFont("assets/pixel.otf")
+  stick = loadImage("assets/stick.png")
   bg  = loadImage ("assets/nightbg.png");
   marsh1 = loadImage("assets/Marsh1.png");
   marsh2 = loadImage("assets/Marsh2.png");
@@ -271,8 +275,6 @@ else if (gameState==="smores"){
   Smores();
 }
 
-
-
 }
 
 function mousePressed(){
@@ -312,7 +314,16 @@ function mouseDragged(){
 // ALL CUSTOM FUNCTIONS
 
 function preScreen(){
-  text("PRESS ON THE FIRE\n TO OPEN MENU",width/2,height/2)
+  text("1. INSERT MARSHMALLOW\n TO THE STICK",width/2,height/3)
+  text("2. PRESS ON THE FIRE\n TO OPEN MENU",width/2,height/1.2)
+
+  image(stick,width/4,500,300,300)
+  push()
+  textSize(100);
+  text("->",width/2,500)
+  pop()
+  image(marsh1,width/1.3,550,400,400)
+
 }
 
 function startScreen(){
@@ -321,15 +332,20 @@ function startScreen(){
     MenuSound.play();
    }
   }
-
+  
   image(bg,width/2,height/2);
   textAlign(CENTER);
   textSize(32);
-  text("PRESS ON THE FIRE \nAGAIN TO START",width/2,height/2);
+  text("PRESS ON THE FIRE \nAGAIN TO START",250,height/1.8);
 
-  text("Directions:\n USE LEFT MOUSE TO CLICK AND HOLD",width/2,height/2.5)
-
-  
+  text("Directions:\n 1.USE THE \nMARSHMALLOW TO \nCLICK AND HOLD",240,height/2.5)
+  push()
+  textAlign(CENTER,RIGHT);
+  text("2. HIT THE \nWATER BUCKET\n IF YOU LIKE\n YOUR \nMARSHMALLOW",700,height/2.6)
+  pop()
+  image(tutorial,width/3.9,700,300,300);
+  image(campfire,width/2.9,700,200,200)
+  image(wash,width/1.3,700,300,300)
 }
 
 function startNextGame(){
@@ -356,14 +372,13 @@ function startNextGame(){
 
   //reset minigame5 score
   xpos = 200;
-  ypos = 30;
+  ypos = 150;
   xspeed = 10;
   yspeed = 0;
   falling = false;
 
   //reset minigame 6 score
   xChocolate = 250;
-
 
   
 }
@@ -427,7 +442,9 @@ flyX += flySpeed;
   }else if(miss>0){
     gameState="endscreen"
     }
-  }
+
+
+}
 
 function minigame2(){
   
@@ -447,11 +464,15 @@ function minigame2(){
     }
     image(bg,width/2,height/2);
     textAlign(CENTER);
-    fill(0);
     textSize(32);
     text(countdown, width/2, 50);
-    text(freezeCount, width/2, 50);
+    push();
+    fill(255,0,0);
+    textSize(80);
+    text(freezeCount, width/2, 200);
     text("DO NOT MOVE",width/2,height/2);
+    pop();
+
   } else {
     // gameOver === true: draw final screen
     if (win) {
@@ -483,12 +504,16 @@ function minigame3(){
     imageMode(CENTER);
     image(bg,width/2,height/2);
     textAlign(CENTER);
-    fill(0);
     textSize(32);
     text(countdown, width/2, 50);
+    push()
+    textSize(50);
     text(cookMarsh,width/2,200);
+    pop()
 
     text("Press the marshmallow in the fire \nto cook the marshmallow", width/2, 600);
+    
+    
     image(campfire,width/2,height/2.5,400,400)
   } else {
     // gameOver === true: draw final screen
@@ -506,12 +531,14 @@ function minigame3(){
 function minigame4(){
   image(bg,width/2,height/2);
     textAlign(CENTER);
-    fill(0);
     textSize(32);
     text(countdown, width/2, 50);
-    text("WHACK THE MARSHMALLOW \n TO PUT OUT THE FIRE",width/2,height/2) 
-    text(mashing,width/2,70)
-    image(campfire,width/2,height/2,100,100)
+    text("WHACK THE MARSHMALLOW \n TO PUT OUT THE FIRE",width/2,700)
+     push()
+     textSize(50);
+    text(mashing,width/2,200)
+    pop()
+    image(campfire,width/2,height/2,400,400)
   if (!gameOver) {
     if (frameCount % 30 === 0 && countdown > 0) {
       countdown--;
@@ -542,7 +569,7 @@ function minigame5(){
   imageMode(CENTER);
   image(bg,width/2,height/2);
   text(countdown, width/2, 50);
-  text("Drop the ball in the box",width/2,70)
+  text("Drop the marshmallow \n in the mouth!",width/2,350)
 
   rectMode(CENTER);
     let platformX = width / 2;
@@ -599,10 +626,6 @@ function minigame6(){
   text("Drag the marshmallow to the left,\n to open the chocolate bar",width/2,height/3)
 
   imageMode(CENTER);
-
-
-  ellipseMode(CENTER);
-  // ellipse(xChocolate,width/2,90)
   image(chocolate,xChocolate,height/2)
   image(chocolatebar,250,height/1.5,500,500)
 
