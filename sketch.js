@@ -401,6 +401,7 @@ function endScreens(){
     startTransition();
     index = 0;
     smoreIndex = 0;
+    countdown = 30;
   }
 
   if(keyIsDown(DOWN_ARROW)){
@@ -418,6 +419,7 @@ function Smores(){
     startTransition()
     index = 0;
     smoreIndex = 0;
+    countdown= 30;
   }
 
 }
